@@ -35,13 +35,8 @@ async function searchParts() {
 
         const responseData = await response.json();
         console.log("RAW DATA RECEIVED FROM N8N:", responseData);
-
-        // --- THIS IS THE FIX ---
-        // n8n returns an array with one item, so we extract that first item.
-        const resultData = responseData[0];
-        // ---------------------
         
-        displayResults(resultData);
+        displayResults(responseData);
 
     } catch (error) {
         console.error('Error:', error);
@@ -87,12 +82,15 @@ function displayResults(data) {
         const price = result.price || 'Not available';
         const availability = result.availability || 'Not specified';
         const url = result.url || '#';
+        const deliveryTime = result.deliveryTime || 'Not available'; // Get delivery time
         const bestBetBadge = result.isBest ? '🏆 Best Option' : '';
 
+        // Added the Delivery Time paragraph below
         card.innerHTML = `
             <h3><a href="${url}" target="_blank">${title}</a> <span style="color: #28a745; font-weight: bold;">${bestBetBadge}</span></h3>
             <p><strong>Price:</strong> ${price}</p>
             <p><strong>Availability:</strong> <span style="color: ${availability && availability.toUpperCase().includes('IN STOCK') ? 'green' : 'red'};">${availability}</span></p>
+            <p><strong>Delivery:</strong> 🚚 ${deliveryTime}</p>
         `;
         resultsContainer.appendChild(card);
     });
