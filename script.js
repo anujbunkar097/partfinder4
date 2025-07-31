@@ -8,7 +8,7 @@ document.getElementById('partNumberInput').addEventListener('keypress', function
 async function searchParts() {
     const partNumber = document.getElementById('partNumberInput').value;
     const resultsContainer = document.getElementById('resultsContainer');
-    const summaryContainer = document.getElementById('summaryContainer'); // Get summary container
+    const summaryContainer = document.getElementById('summaryContainer');
     const loader = document.getElementById('loader');
     const searchButton = document.getElementById('searchButton');
 
@@ -20,7 +20,7 @@ async function searchParts() {
     const webhookUrl = 'https://transformco.app.n8n.cloud/webhook/2a1d2507-373b-43a7-9ec9-3965b56dbcc3';
 
     resultsContainer.innerHTML = '';
-    summaryContainer.innerHTML = ''; // Clear previous summary
+    summaryContainer.innerHTML = '';
     loader.style.display = 'block';
     searchButton.disabled = true;
 
@@ -33,11 +33,14 @@ async function searchParts() {
             body: JSON.stringify({ partNumber: partNumber })
         });
 
-        const resultData = await response.json();
+        const responseData = await response.json();
+        console.log("RAW DATA RECEIVED FROM N8N:", responseData);
+
+        // --- THIS IS THE FIX ---
+        // n8n returns an array with one item, so we extract that first item.
+        const resultData = responseData[0];
+        // ---------------------
         
-        console.log("RAW DATA RECEIVED FROM N8N:", resultData);
-        
-        // NEW: Display the summary and the results
         displayResults(resultData);
 
     } catch (error) {
@@ -53,11 +56,14 @@ function displayResults(data) {
     const resultsContainer = document.getElementById('resultsContainer');
     const summaryContainer = document.getElementById('summaryContainer');
     
-    // Clear previous results
     resultsContainer.innerHTML = '';
     summaryContainer.innerHTML = '';
 
-    // NEW: Display the AI-generated summary
+    if (!data) {
+        resultsContainer.innerHTML = '<p>No data object was found in the response.</p>';
+        return;
+    }
+    
     if (data.summary) {
         summaryContainer.innerHTML = `<p><strong>AI Analysis:</strong> ${data.summary}</p>`;
     }
@@ -73,7 +79,6 @@ function displayResults(data) {
         const card = document.createElement('div');
         card.className = 'result-card';
 
-        // NEW: Add 'best-bet' class if the item is recommended
         if (result.isBest) {
             card.classList.add('best-bet');
         }
